@@ -7,6 +7,8 @@ import com.aventon.platform.crm.domain.model.valueobjects.RatingAspect;
 import com.aventon.platform.shared.domain.model.aggregates.AuditableAbstractAggregateRoot;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
@@ -25,61 +27,43 @@ import java.util.Date;
  *
  * @author Ely Rivaldo Cortez Flores
  */
+
+
 @Entity
 public class Rating extends AuditableAbstractAggregateRoot<Rating> {
 
-    /**
-     * The product id value object
-     */
     @Embedded
     private ProductId productId;
 
-    /**
-     * The email address value object
-     */
     @Embedded
     private EmailAddress emailAddress;
 
-    /**
-     * The rating value
-     */
     @Getter
     @Min(1)
     @Max(5)
     @NotNull
     private Integer rating;
 
-    /**
-     * The rating aspect value object
-     */
     @Getter
     @NotNull
     private RatingAspect ratingAspect;
 
-    /**
-     * The comment value
-     */
     @Getter
     @Size(max=360)
     private String comment;
 
-    /**
-     * The date the rating was created
-     */
     @Getter
     private Date ratedAt;
 
-    /**
-     * Default constructor
-     */
+    @Getter
+    private Date createdAt;
+
+    @Getter
+    private Date updatedAt;
+
     public Rating() {
     }
 
-    /**
-     * This constructor creates a rating aggregate root from a create rating command
-     *
-     * @param command the create rating command
-     */
     public Rating(CreateRatingCommand command) {
         this.productId = new ProductId(command.productId());
         this.emailAddress = new EmailAddress(command.userEmailAddress());
@@ -89,20 +73,21 @@ public class Rating extends AuditableAbstractAggregateRoot<Rating> {
         this.ratedAt = new Date();
     }
 
-    /**
-     * Gets the product id
-     *
-     * @return the product id
-     */
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = new Date();
+        this.updatedAt = new Date();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        this.updatedAt = new Date();
+    }
+
     public Long getProductId() {
         return this.productId.productId();
     }
 
-    /**
-     * Gets the email address
-     *
-     * @return the email address
-     */
     public String getEmailAddress() {
         return this.emailAddress.emailAddress();
     }
